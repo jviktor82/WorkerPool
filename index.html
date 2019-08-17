@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>WorkerPool</title>
+<script src="workerpool.js"></script>
+</head>
+
+<body>
+<script>
+var startTime, endTime;
+
+function start() {
+  startTime = new Date();
+};
+
+function end() {
+  endTime = new Date();
+  var timeDiff = endTime - startTime;
+  timeDiff /= 1000;
+
+  var seconds = Math.round(timeDiff);
+  console.log(seconds + " seconds");
+}
+
+if (window.Worker) {
+//alert("engine ON");
+}
+
+function worker_mySum() {
+  var records = [];
+
+  function sumArr(myArr) {
+    var x = 0;
+    for (var i = 0; i < myArr.length; i++) {
+      x = x + myArr[i];
+    }
+    return x;
+  }
+  onmessage = function(event) {
+    if (typeof event.data.init !== "undefined")
+    {
+      records = event.data.init;
+    }
+    else
+    {
+      var x = 0; //sumArr(records);
+      for (var j=1; j<=1000000; j++)
+      {
+        x = 0;
+        for (var i = 1; i <= event.data; i++) {
+          x = x + i;
+        }
+      }
+      setTimeout(function () {
+        postMessage({ param : event.data, result : x} );
+      }, Math.floor(Math.random() * 1000 * 0));
+    }
+  }
+}
+
+pool = new WorkerPool();
+pool.setWorkerBody(worker_mySum);
+pool.setWorkerNum(3);
+pool.setWorkerInitData({ init: [1,2,3] });
+
+pool.on( WorkerPool.ERROR, function(event) {
+  document.body.innerHTML += "ERROR: " + event + "</br>";
+  pool.feed(event);
+});
+
+var intMyVar = 1;
+var count = 0;
+var iEnd = 50;
+
+pool.on( WorkerPool.FEED, function() {
+  if (intMyVar <= iEnd)
+  {
+    pool.feed(intMyVar);
+    intMyVar++;
+  }
+});
+
+pool.on( WorkerPool.RESULT, function(data) {
+  count++;
+  var strStat = pool.getWorkersStat();
+  document.body.innerHTML += data.param + " " + data.result + " (" + strStat.free + ", " + strStat.all + ")</br>";
+
+  if (count < 15) { pool.addWorker(); }
+
+  if (count > 30) { pool.removeWorker(); }
+
+  if (count == iEnd)
+  {
+    end();
+    pool.clearPool();
+  }
+});
+
+start();
+pool.start();
+
+
+</script>
+
+
+</body>
+</html>

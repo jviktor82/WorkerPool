@@ -1,0 +1,17 @@
+{
+  "name": "your-app",
+  "version": "0.1.0",
+  "main": "main.js",
+  "devDependencies": {
+    "electron": "^6.0.0",
+    "electron-packager": "^13.1.1"
+  },
+  "scripts": {
+    "package-win": "electron-packager . SimotionUML --overwrite --asar=true --ignore=\"^/__noinc\" --ignore=\"./js/*_source.js\" --platform=win32 --arch=ia32 --prune=true --out=release-builds --version-string.CompanyName=evosoft --version-string.FileDescription=CE --version-string.ProductName=\"SimotionUML\"",
+    "package-win64": "electron-packager . SimotionUML --overwrite --asar=true --ignore=\"^/__noinc\" --ignore=\"./js/*_source.js\" --platform=win32 --arch=x64 --prune=true --out=release-builds --version-string.CompanyName=evosoft --version-string.FileDescription=CE --version-string.ProductName=\"SimotionUML\""
+  },
+  "dependencies": {
+    "electron-osx-prompt": "^1.4.1",
+    "npm": "^6.10.2"
+  }
+}
