@@ -26,7 +26,8 @@ if (window.Worker) {
 //alert("engine ON");
 }
 
-function worker_mySum() {
+function worker_mySum()
+{
   var records = [];
 
   function sumArr(myArr) {
@@ -43,17 +44,18 @@ function worker_mySum() {
     }
     else
     {
-      var x = 0; //sumArr(records);
-      for (var j=1; j<=1000000; j++)
+      var x = sumArr(records);
+      /*
+      for (var j=1; j<=100000; j++)
       {
         x = 0;
         for (var i = 1; i <= event.data; i++) {
           x = x + i;
         }
-      }
+      }*/
       setTimeout(function () {
         postMessage({ param : event.data, result : x} );
-      }, Math.floor(Math.random() * 1000 * 0));
+      }, Math.floor(Math.random() * 2000 * 1));
     }
   }
 }
@@ -70,7 +72,7 @@ pool.on( WorkerPool.ERROR, function(event) {
 
 var intMyVar = 1;
 var count = 0;
-var iEnd = 50;
+var iEnd = 25;
 
 pool.on( WorkerPool.FEED, function() {
   if (intMyVar <= iEnd)
@@ -85,9 +87,9 @@ pool.on( WorkerPool.RESULT, function(data) {
   var strStat = pool.getWorkersStat();
   document.body.innerHTML += data.param + " " + data.result + " (" + strStat.free + ", " + strStat.all + ")</br>";
 
-  if (count < 15) { pool.addWorker(); }
+  if (count < 7) { pool.addWorker(); }
 
-  if (count > 30) { pool.removeWorker(); }
+  if (count > 10) { pool.removeWorker(); }
 
   if (count == iEnd)
   {

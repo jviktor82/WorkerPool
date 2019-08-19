@@ -42,7 +42,7 @@ WorkerPool = (function() {
     };
 
     worker.onerror = function(event) {
-      var handler = myMap.get(WorkerPool.ERROR);
+      var handler = pool.myMap.get(WorkerPool.ERROR);
       if (typeof handler !== "undefined")
       {
         setTimeout(function(){ handler(event); }, 0);
