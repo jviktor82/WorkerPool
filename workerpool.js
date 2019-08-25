@@ -137,6 +137,8 @@ WorkerPool = (function() {
       worker.terminate();
     });
     this.arrFreeWorkers = [];
+    this.numWorker = 0;
+    this.numWorking= 0;
   };
   
   WorkerPool.prototype.addWorker = function() {
