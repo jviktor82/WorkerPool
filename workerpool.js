@@ -11,19 +11,17 @@ WorkerPool = (function() {
     this.arrFreeWorkers = [];
     this.myMap = new Map();
     this.funcWorkerBody = "";
+    this.pool = this;
   }
   
-  function addNewWorkerToPool()
-  {
+  function addNewWorkerToPool() {
     var worker = new Worker(URL.createObjectURL(new Blob(["("+this.funcWorkerBody.toString()+")()"], {type: 'text/javascript'})));
     if (typeof this.initData !== "undefined")
     {
       worker.postMessage(this.initData);
     }
-    this.arrFreeWorkers.push(worker);
+    addToFreeWorkers.call(this, worker);
 
-    var pool = this;
-    
     worker.onmessage = function(event) {
       pool.numWorking--;
       var handler = pool.myMap.get(WorkerPool.RESULT);
@@ -52,49 +50,38 @@ WorkerPool = (function() {
     };
   }
   
-  function buildEngine()
-  {
+  function buildEngine() {
     this.arrFreeWorkers = [];
-    for (var i=1; i <= this.numWorker; i++)
-    {
-      addNewWorkerToPool.call(this);
-    }
+    Array(this.numWorker).fill().map(function() { addNewWorkerToPool.call(pool); } );
   }
   
-  function addToFreeWorkers(worker)
-  {
+  function addToFreeWorkers(worker) {
     if (this.numWorker > (this.arrFreeWorkers.length + this.numWorking))
     {
-      this.arrFreeWorkers.push(worker);
-      return true;
+      return this.arrFreeWorkers.push(worker) > 0;
     }
     return false;
   }
   
-  function needFeed()
-  {
-    var handler = this.myMap.get(WorkerPool.FEED);
-    if (typeof handler !== "undefined" && this.arrFreeWorkers.length > 0)
+  function needFeed() {
+    if (typeof this.myMap.get(WorkerPool.FEED) !== "undefined" && this.arrFreeWorkers.length > 0)
     {
-      setTimeout(handler, 0);
+      setTimeout(this.myMap.get(WorkerPool.FEED), 0);
     }
   }
   
   /**
     @param body: function
   */
-  WorkerPool.prototype.setWorkerBody = function(func)
-  {
+  WorkerPool.prototype.setWorkerBody = function(func) {
     this.funcWorkerBody = func;
   };
   
-  WorkerPool.prototype.setWorkerNum = function(num)
-  {
+  WorkerPool.prototype.setWorkerNum = function(num) {
     this.numWorker = num;
   };
   
-  WorkerPool.prototype.setWorkerInitData = function(data)
-  {
+  WorkerPool.prototype.setWorkerInitData = function(data) {
     this.initData = data;
   };
 
@@ -108,10 +95,7 @@ WorkerPool = (function() {
 
   WorkerPool.prototype.start = function() {
     buildEngine.call(this);
-    var numFreeWorker = this.arrFreeWorkers.length;
-    for (var i = 1; i <= numFreeWorker; i++) {
-      needFeed.call(this);
-    }
+    Array(this.arrFreeWorkers.length).fill().map(function() { needFeed.call(pool); });
   };
   
   WorkerPool.prototype.feed = function(item) {
@@ -132,13 +116,9 @@ WorkerPool = (function() {
   };
   
   WorkerPool.prototype.clearPool = function() {
-    this.arrFreeWorkers.forEach(function(worker)
-    {
-      worker.terminate();
-    });
+    this.arrFreeWorkers.map(function(worker) { worker.terminate(); });
     this.arrFreeWorkers = [];
-    this.numWorker = 0;
-    this.numWorking= 0;
+    this.numWorker = this.numWorking = 0;
   };
   
   WorkerPool.prototype.addWorker = function() {
@@ -148,10 +128,7 @@ WorkerPool = (function() {
   };
   
   WorkerPool.prototype.removeWorker = function() {
-    if (this.numWorker > 1)
-    {
-      this.numWorker--;
-    }
+    this.numWorker = this.numWorker > 1 ? (this.numWorker - 1) : this.numWorker;
   };
 
   return WorkerPool;
